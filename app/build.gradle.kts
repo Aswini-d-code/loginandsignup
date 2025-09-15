@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.serialization")
+    id("com.google.gms.google-services") // ✅ Firebase plugin
 }
 
 android {
@@ -20,7 +20,6 @@ android {
 
     buildFeatures {
         compose = true
-        buildConfig = true
     }
 
     composeOptions {
@@ -29,10 +28,6 @@ android {
 
     kotlinOptions {
         jvmTarget = "11"
-        freeCompilerArgs += listOf(
-            "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi",
-            "-Xopt-in=kotlinx.serialization.InternalSerializationApi"
-        )
     }
 
     compileOptions {
@@ -48,6 +43,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
 
     // Compose
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     implementation(platform("androidx.compose:compose-bom:2024.06.00"))
     implementation("androidx.activity:activity-compose:1.9.0")
     implementation("androidx.compose.ui:ui")
@@ -55,20 +51,14 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
-    // Ktor for API (multi-platform friendly)
-    implementation("io.ktor:ktor-client-core:2.3.6")
-    implementation("io.ktor:ktor-client-okhttp:2.3.6")
-    implementation("io.ktor:ktor-client-content-negotiation:2.3.6")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.6")
-    implementation("io.ktor:ktor-client-logging:2.3.6")
-
-    // Kotlinx Serialization
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+    // Firebase Auth
+    implementation("com.google.firebase:firebase-auth:23.0.0")
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-    // DataStore (persistent login)
+    // DataStore
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
     // Testing
@@ -76,3 +66,4 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
+

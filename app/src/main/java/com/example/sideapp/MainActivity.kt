@@ -3,8 +3,9 @@ package com.example.sideapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sideapp.data.remote.ApiService
 import com.example.sideapp.data.remote.AuthRepository
@@ -13,21 +14,20 @@ import com.example.sideapp.ui.SignupScreen
 import com.example.sideapp.ui.UserListScreen
 import com.example.sideapp.utils.SessionManager
 import com.example.sideapp.viewmodel.UserViewModel
-import io.ktor.client.*
-import io.ktor.client.engine.okhttp.*
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import kotlinx.coroutines.flow.collectLatest
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : ComponentActivity() {
 
-    private val http by lazy { HttpClient(OkHttp) }
-    private val api by lazy { ApiService(http) }
+    private val api by lazy { ApiService(FirebaseAuth.getInstance()) }
     private val repo by lazy { AuthRepository(api) }
     private val session by lazy { SessionManager(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // ✅ Initialize Firebase before using FirebaseAuth
+        FirebaseApp.initializeApp(this)
 
         val factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -37,10 +37,8 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            MaterialTheme {
-                val vm: UserViewModel = viewModel(factory = factory)
-                AppHost(vm)
-            }
+            val vm: UserViewModel = viewModel(factory = factory)
+            AppHost(vm)
         }
     }
 }
@@ -49,33 +47,28 @@ class MainActivity : ComponentActivity() {
 private fun AppHost(vm: UserViewModel) {
     val isLoggedIn by vm.isLoggedIn.collectAsState()
     val status by vm.status.collectAsState()
-    val users by vm.users.collectAsState()
 
     var showSignup by remember { mutableStateOf(false) }
 
     if (!isLoggedIn) {
         if (showSignup) {
             SignupScreen(
-                onSignup = { e, p -> vm.signup(e, p) },
+                onSignup = { email, password -> vm.signup(email, password) },
                 onBackToLogin = { showSignup = false },
                 status = status
             )
         } else {
             LoginScreen(
-                onLogin = { e, p -> vm.login(e, p) },
+                onLogin = { email, password -> vm.login(email, password) },
                 onSignupClick = { showSignup = true },
                 status = status
             )
         }
     } else {
         UserListScreen(
-            users = users,
             status = status,
-            onRefresh = { vm.refreshUsers() },
-            onCreate = { name, job -> vm.createUser(name, job) },
-            onUpdate = { id, name, job -> vm.updateUser(id, name, job) },
-            onDelete = { id -> vm.deleteUser(id) },
             onLogout = { vm.logout() }
         )
+
     }
 }

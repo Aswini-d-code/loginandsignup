@@ -20,14 +20,12 @@ class UserViewModel(
     private val _status = MutableStateFlow("")
     val status: StateFlow<String> = _status
 
-    private val _users = MutableStateFlow<List<User>>(emptyList())
-    val users: StateFlow<List<User>> = _users
-
+    // 🔹 Login
     fun login(email: String, password: String) {
         viewModelScope.launch {
             repo.login(email, password)
-                .onSuccess { token ->
-                    session.saveToken(token)
+                .onSuccess { uid ->
+                    session.saveToken(uid) // store Firebase UID
                     _isLoggedIn.value = true
                     _status.value = "Login successful"
                 }
@@ -37,11 +35,12 @@ class UserViewModel(
         }
     }
 
+    // 🔹 Signup
     fun signup(email: String, password: String) {
         viewModelScope.launch {
             repo.signup(email, password)
-                .onSuccess { token ->
-                    session.saveToken(token)
+                .onSuccess { uid ->
+                    session.saveToken(uid)
                     _isLoggedIn.value = true
                     _status.value = "Signup successful"
                 }
@@ -51,43 +50,18 @@ class UserViewModel(
         }
     }
 
-    fun refreshUsers() {
-        viewModelScope.launch {
-            repo.getUsers()
-                .onSuccess { _users.value = it }
-                .onFailure { _status.value = "Failed to load users: ${it.message}" }
-        }
-    }
-
-    fun createUser(name: String, job: String) {
-        viewModelScope.launch {
-            repo.createUser(name, job)
-                .onSuccess { _status.value = "Created user: ${it.name}" }
-                .onFailure { _status.value = "Create failed: ${it.message}" }
-        }
-    }
-
-    fun updateUser(id: Int, name: String, job: String) {
-        viewModelScope.launch {
-            repo.updateUser(id, name, job)
-                .onSuccess { _status.value = "Updated user: ${it.name}" }
-                .onFailure { _status.value = "Update failed: ${it.message}" }
-        }
-    }
-
-    fun deleteUser(id: Int) {
-        viewModelScope.launch {
-            repo.deleteUser(id)
-                .onSuccess { _status.value = "Deleted user $id" }
-                .onFailure { _status.value = "Delete failed: ${it.message}" }
-        }
-    }
-
+    // 🔹 Logout
     fun logout() {
-        viewModelScope.launch {
-            session.clearToken()
-            _isLoggedIn.value = false
-            _status.value = "Logged out"
-        }
+        repo.logout()
+        session.clearToken()
+        _isLoggedIn.value = false
+        _status.value = "Logged out"
+    }
+
+    // 🔹 Check if user already logged in
+    fun checkUserLoggedIn() {
+        val uid = repo.currentUserId()
+        _isLoggedIn.value = uid != null
+        _status.value = if (uid != null) "User already logged in" else "No user session"
     }
 }

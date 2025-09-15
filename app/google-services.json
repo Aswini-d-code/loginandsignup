@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "522237680471",
+    "project_id": "sideapp-f32ad",
+    "storage_bucket": "sideapp-f32ad.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:522237680471:android:9fc599466f7b252a1b7c12",
+        "android_client_info": {
+          "package_name": "com.example.sideapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0exepqqCZD0LS-NURLUpdbiDsjbo2Qu8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
